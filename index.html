@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Denzz Store - Order</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: #f2f2f2;
+            display: flex;
+            flex-direction: row;
+            height: 100vh;
+        }
+        .sidebar {
+            width: 250px;
+            background: #333;
+            color: #fff;
+            padding: 20px;
+            flex-shrink: 0;
+        }
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+        .sidebar li {
+            padding: 10px;
+            cursor: pointer;
+            background: #444;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+        .sidebar li:hover {
+            background: #555;
+        }
+        .content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .products {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .product {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            width: 200px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .product:hover {
+            transform: scale(1.05);
+        }
+        .form-container {
+            margin-top: 30px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        button {
+            background: #4CAF50;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                height: auto;
+                text-align: center;
+            }
+            .products {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h2>Denzz Store</h2>
+    <ul>
+        <li onclick="showCategory('tiktok')">TikTok</li>
+        <li onclick="showCategory('instagram')">Instagram</li>
+        <li onclick="showCategory('youtube')">YouTube</li>
+    </ul>
+</div>
+
+<div class="content">
+    <h2>Pilih Layanan</h2>
+    <div id="productList" class="products"></div>
+
+    <div class="form-container">
+        <h3>Form Order</h3>
+        <form id="orderForm">
+            <input type="text" id="name" placeholder="Nama Anda" required>
+            <input type="text" id="service" placeholder="Layanan" readonly required>
+            <input type="text" id="target" placeholder="Username / Link Target" required>
+            <select id="payment_method" required>
+                <option value="">Pilih Pembayaran</option>
+                <option value="DANA">DANA</option>
+                <option value="GoPay">GoPay</option>
+            </select>
+            <button type="submit">Kirim Order</button>
+        </form>
+        <div id="result"></div>
+    </div>
+</div>
+
+<script>
+    const products = {
+        tiktok: [
+            "TikTok Followers 1K",
+            "TikTok Likes 500",
+            "TikTok Views 10K"
+        ],
+        instagram: [
+            "Instagram Followers 500",
+            "Instagram Likes 1K",
+            "Instagram Views 5K"
+        ],
+        youtube: [
+            "YouTube Views 1000",
+            "YouTube Subscribers 100",
+            "YouTube Likes 500"
+        ]
+    };
+
+    function showCategory(category) {
+        const productList = document.getElementById('productList');
+        productList.innerHTML = '';
+
+        products[category].forEach(service => {
+            const div = document.createElement('div');
+            div.className = 'product';
+            div.innerText = service;
+            div.onclick = () => document.getElementById('service').value = service;
+            productList.appendChild(div);
+        });
+    }
+
+    document.getElementById('orderForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const orderData = {
+            name: document.getElementById('name').value,
+            service: document.getElementById('service').value,
+            target: document.getElementById('target').value,
+            payment_method: document.getElementById('payment_method').value
+        };
+
+        if(!orderData.service){
+            alert('Silahkan pilih produk terlebih dahulu');
+            return;
+        }
+
+        const response = await fetch('/api/order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(orderData)
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            document.getElementById('result').innerText = 'Order berhasil dikirim. Silakan lakukan pembayaran.';
+            document.getElementById('orderForm').reset();
+        } else {
+            document.getElementById('result').innerText = 'Gagal mengirim order.';
+        }
+    });
+
+    // default load TikTok
+    showCategory('tiktok');
+</script>
+
+</body>
+</html>
